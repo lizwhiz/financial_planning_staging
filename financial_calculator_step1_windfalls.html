@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calculator - With Windfalls Step 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .results {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .success { color: #27ae60; }
+        .error { color: #e74c3c; }
+        .warning { color: #f39c12; }
+        small {
+            color: #666;
+            font-size: 0.85em;
+            display: block;
+            margin-top: 3px;
+        }
+        .windfall-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            position: relative;
+        }
+        .remove-windfall {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Financial Calculator - With Windfalls (Step 1)</h1>
+        
+        <div class="input-section">
+            <h3>Current Position</h3>
+            <div class="form-row">
+                <div>
+                    <label>Current Age:</label>
+                    <input type="number" id="currentAge" value="40">
+                </div>
+                <div>
+                    <label>Current Balance ($):</label>
+                    <input type="number" id="currentBalance" value="475000">
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h3>Annual Savings</h3>
+            <div class="form-row">
+                <div>
+                    <label>Employee 401k ($):</label>
+                    <input type="number" id="employee401k" value="23000">
+                </div>
+                <div>
+                    <label>Employer Match ($):</label>
+                    <input type="number" id="employer401k" value="10000">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Roth IRA ($):</label>
+                    <input type="number" id="rothIRA" value="7000">
+                </div>
+                <div>
+                    <label>Spouse Roth ($):</label>
+                    <input type="number" id="spouseRothIRA" value="7000">
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Mega Backdoor ($):</label>
+                    <input type="number" id="megaBackdoor" value="20500">
+                </div>
+                <div>
+                    <label>Additional Savings ($):</label>
+                    <input type="number" id="additionalSavings" value="50000">
+                    <small>Non-retirement savings (taxable accounts)</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Annual Contribution Growth (%):</label>
+                    <input type="number" id="growthRate" value="3" step="0.1">
+                    <small>How much your savings increase each year (salary growth)</small>
+                </div>
+                <div>
+                    <label>Expected Return (%):</label>
+                    <input type="number" id="investmentReturn" value="7" step="0.1">
+                    <small>Annual portfolio return assumption</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h3>Goals & Timeline</h3>
+            <div class="form-row">
+                <div>
+                    <label>Retirement Age:</label>
+                    <input type="number" id="retirementAge" value="60">
+                </div>
+                <div>
+                    <label>Desired Monthly Income ($):</label>
+                    <input type="number" id="desiredMonthlyIncome" value="15000" step="500">
+                    <small>How much monthly income you want in retirement</small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label>Withdrawal Rate (%):</label>
+                    <input type="number" id="withdrawalRate" value="4" step="0.1">
+                    <small>Safe withdrawal rate (4% is standard)</small>
+                </div>
+                <div style="background: #e8f5e8; padding: 15px; border-radius: 5px;">
+                    <strong>Target Portfolio: <span id="targetFromIncome">$0</span></strong>
+                    <br><small>Based on 4% rule calculation</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h3>🎁 Windfalls & One-Time Events</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">Add expected one-time money events like bonuses, RSU vestings, inheritance, property sales, or IPO proceeds.</p>
+            <div id="windfalls">
+                <!-- Windfalls will be added here -->
+            </div>
+            <button type="button" onclick="addWindfall()" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">+ Add Windfall</button>
+        </div>
+        
+        <button class="btn" onclick="calculateBasic()">🔥 Calculate Financial Projections (Auto-updates as you type)</button>
+        
+        <div id="results" class="results">
+            <p>Click calculate to see results...</p>
+        </div>
+
+        <div id="yearlyTable" style="margin-top: 20px;">
+            <!-- Table will go here -->
+        </div>
+    </div>
+
+    <script>
+        var windfallCount = 0;
+        
+        function addWindfall() {
+            windfallCount++;
+            
+            var container = document.getElementById('windfalls');
+            var div = document.createElement('div');
+            div.className = 'windfall-item';
+            div.id = 'windfall-' + windfallCount;
+            
+            div.innerHTML = 
+                '<button type="button" class="remove-windfall" onclick="removeWindfall(' + windfallCount + ')">×</button>' +
+                '<div class="form-row">' +
+                    '<div>' +
+                        '<label>Windfall Amount ($):</label>' +
+                        '<input type="number" id="windfallAmount-' + windfallCount + '" min="0" step="1000" value="0">' +
+                    '</div>' +
+                    '<div>' +
+                        '<label>Year Received:</label>' +
+                        '<input type="number" id="windfallYear-' + windfallCount + '" min="2024" max="2080" value="2025">' +
+                    '</div>' +
+                '</div>' +
+                '<div>' +
+                    '<label>Percentage to Retirement (%):</label>' +
+                    '<input type="number" id="windfallAllocation-' + windfallCount + '" value="100" min="0" max="100" step="5">' +
+                    '<small>How much of this windfall goes to retirement vs. other goals</small>' +
+                '</div>';
+            
+            container.appendChild(div);
+        }
+        
+        function removeWindfall(id) {
+            var element = document.getElementById('windfall-' + id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function calculateBasic() {
+            try {
+                // Get basic inputs
+                var currentAge = parseInt(document.getElementById('currentAge').value) || 40;
+                var currentBalance = parseFloat(document.getElementById('currentBalance').value);
+                if (isNaN(currentBalance)) currentBalance = 0;
+                var retirementAge = parseInt(document.getElementById('retirementAge').value) || 60;
+                
+                var investmentReturnInput = parseFloat(document.getElementById('investmentReturn').value);
+                var investmentReturn = isNaN(investmentReturnInput) ? 0.07 : investmentReturnInput / 100;
+                var growthRateInput = parseFloat(document.getElementById('growthRate').value);
+                var growthRate = isNaN(growthRateInput) ? 0.03 : growthRateInput / 100;
+                
+                // Calculate target portfolio from income
+                var targetBalance = updateTargetFromIncome();
+                
+                // Get all savings amounts
+                var employee401k = parseFloat(document.getElementById('employee401k').value);
+                if (isNaN(employee401k)) employee401k = 0;
+                var employer401k = parseFloat(document.getElementById('employer401k').value);
+                if (isNaN(employer401k)) employer401k = 0;
+                var rothIRA = parseFloat(document.getElementById('rothIRA').value);
+                if (isNaN(rothIRA)) rothIRA = 0;
+                var spouseRothIRA = parseFloat(document.getElementById('spouseRothIRA').value);
+                if (isNaN(spouseRothIRA)) spouseRothIRA = 0;
+                var megaBackdoor = parseFloat(document.getElementById('megaBackdoor').value);
+                if (isNaN(megaBackdoor)) megaBackdoor = 0;
+                var additionalSavings = parseFloat(document.getElementById('additionalSavings').value);
+                if (isNaN(additionalSavings)) additionalSavings = 0;
+                
+                var totalAnnualSavings = employee401k + employer401k + rothIRA + spouseRothIRA + megaBackdoor + additionalSavings;
+                
+                // Collect windfalls (step 1 - just collect, don't use yet)
+                var windfalls = {};
+                var windfallElements = document.querySelectorAll('[id^="windfallAmount-"]');
+                for (var w = 0; w < windfallElements.length; w++) {
+                    var element = windfallElements[w];
+                    var id = element.id.split('-')[1];
+                    var amountEl = document.getElementById('windfallAmount-' + id);
+                    var yearEl = document.getElementById('windfallYear-' + id);
+                    var allocationEl = document.getElementById('windfallAllocation-' + id);
+                    
+                    if (amountEl && yearEl && allocationEl) {
+                        var amount = parseFloat(amountEl.value) || 0;
+                        var year = parseInt(yearEl.value) || 0;
+                        var allocation = parseFloat(allocationEl.value) / 100 || 1;
+                        
+                        if (amount > 0 && year > 0) {
+                            windfalls[year] = amount * allocation;
+                        }
+                    }
+                }
+                
+                console.log('Collected windfalls:', JSON.stringify(windfalls));
+                
+                // Simple calculation loop (no windfalls applied yet)
+                var balance = currentBalance;
+                var currentSavings = totalAnnualSavings;
+                var goalReachedAge = null;
+                var canStopSavingAge = null;
+                var yearlyData = [];
+                
+                for (var age = currentAge; age <= retirementAge + 10; age++) {
+                    var contributionsThisYear = 0;
+                    
+                    // Add contributions if before retirement
+                    if (age < retirementAge) {
+                        contributionsThisYear = currentSavings;
+                        balance += contributionsThisYear;
+                        
+                        // Increase savings for NEXT year
+                        currentSavings = currentSavings * (1 + growthRate);
+                    }
+                    
+                    // Apply investment growth
+                    balance *= (1 + investmentReturn);
+                    
+                    // Store yearly data
+                    yearlyData.push({
+                        age: age,
+                        year: 2024 + (age - currentAge),
+                        balance: balance,
+                        contributions: contributionsThisYear
+                    });
+                    
+                    // Check if goal reached
+                    if (!goalReachedAge && balance >= targetBalance) {
+                        goalReachedAge = age;
+                    }
+                    
+                    // Check if can stop saving
+                    if (!canStopSavingAge && age < retirementAge) {
+                        var yearsToRetirement = retirementAge - age;
+                        var futureBalance = balance * Math.pow(1 + investmentReturn, yearsToRetirement);
+                        if (futureBalance >= targetBalance) {
+                            canStopSavingAge = age;
+                        }
+                    }
+                    
+                    if (age > retirementAge + 5) break;
+                }
+                
+                // Display results
+                displayResults(balance, targetBalance, goalReachedAge, canStopSavingAge, retirementAge);
+                
+                // Generate table
+                generateTable(yearlyData, retirementAge, targetBalance);
+                
+            } catch (error) {
+                console.error('Error in calculation:', error.message);
+                document.getElementById('results').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function updateTargetFromIncome() {
+            var desiredMonthly = parseFloat(document.getElementById('desiredMonthlyIncome').value);
+            if (isNaN(desiredMonthly)) desiredMonthly = 15000;
+            
+            var withdrawalRate = parseFloat(document.getElementById('withdrawalRate').value);
+            if (isNaN(withdrawalRate)) withdrawalRate = 4;
+            withdrawalRate = withdrawalRate / 100;
+            
+            var requiredPortfolio = (desiredMonthly * 12) / withdrawalRate;
+            
+            var targetSpan = document.getElementById('targetFromIncome');
+            if (targetSpan) {
+                targetSpan.textContent = '$' + Math.round(requiredPortfolio).toLocaleString();
+            }
+            
+            return requiredPortfolio;
+        }
+        
+        function displayResults(balance, targetBalance, goalReachedAge, canStopSavingAge, retirementAge) {
+            var goalMet = balance >= targetBalance;
+            var desiredIncome = parseFloat(document.getElementById('desiredMonthlyIncome').value) || 15000;
+            var withdrawalRate = (parseFloat(document.getElementById('withdrawalRate').value) || 4) / 100;
+            var monthlyFromPortfolio = (balance * withdrawalRate) / 12;
+            var incomeGoalMet = monthlyFromPortfolio >= desiredIncome;
+            var incomeGap = monthlyFromPortfolio - desiredIncome;
+            
+            var resultHTML = '<h3>Retirement Readiness Summary</h3>';
+            
+            resultHTML += '<div class="metric">';
+            resultHTML += '<span>Balance at Age ' + retirementAge + ':</span>';
+            resultHTML += '<span class="' + (goalMet ? 'success' : 'error') + '">$' + Math.round(balance).toLocaleString() + '</span>';
+            resultHTML += '</div>';
+            
+            resultHTML += '<div class="metric">';
+            resultHTML += '<span>Target Portfolio:</span>';
+            resultHTML += '<span>$' + Math.round(targetBalance).toLocaleString() + '</span>';
+            resultHTML += '</div>';
+            
+            resultHTML += '<div class="metric">';
+            resultHTML += '<span>Monthly Income Available:</span>';
+            resultHTML += '<span class="' + (incomeGoalMet ? 'success' : 'error') + '">$' + Math.round(monthlyFromPortfolio).toLocaleString() + '</span>';
+            resultHTML += '</div>';
+            
+            resultHTML += '<div class="metric">';
+            resultHTML += '<span>Desired Monthly Income:</span>';
+            resultHTML += '<span>$' + Math.round(desiredIncome).toLocaleString() + '</span>';
+            resultHTML += '</div>';
+            
+            resultHTML += '<div class="metric">';
+            resultHTML += '<span>Income Goal Status:</span>';
+            resultHTML += '<span class="' + (incomeGoalMet ? 'success' : 'error') + '">' + (incomeGoalMet ? '✅ Goal Met' : '❌ Shortfall') + '</span>';
+            resultHTML += '</div>';
+            
+            if (incomeGoalMet) {
+                resultHTML += '<div class="metric">';
+                resultHTML += '<span>Monthly Income Surplus:</span>';
+                resultHTML += '<span class="success">+$' + Math.round(incomeGap).toLocaleString() + '</span>';
+                resultHTML += '</div>';
+            }
+            
+            if (goalReachedAge) {
+                resultHTML += '<div class="metric">';
+                resultHTML += '<span>Goal Reached at Age:</span>';
+                resultHTML += '<span class="success">' + goalReachedAge + '</span>';
+                resultHTML += '</div>';
+            }
+            
+            if (canStopSavingAge) {
+                resultHTML += '<div class="metric">';
+                resultHTML += '<span>Can Stop Saving at Age:</span>';
+                resultHTML += '<span class="success">' + canStopSavingAge + '</span>';
+                resultHTML += '</div>';
+            }
+            
+            document.getElementById('results').innerHTML = resultHTML;
+        }
+        
+        function generateTable(yearlyData, retirementAge, targetBalance) {
+            try {
+                var tableHTML = '<h3>Year-by-Year Projection</h3>';
+                tableHTML += '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">';
+                tableHTML += '<table style="width: 100%; border-collapse: collapse;">';
+                
+                tableHTML += '<thead style="background: #f8f9fa; position: sticky; top: 0;">';
+                tableHTML += '<tr>';
+                tableHTML += '<th style="border: 1px solid #ddd; padding: 8px;">Age</th>';
+                tableHTML += '<th style="border: 1px solid #ddd; padding: 8px;">Year</th>';
+                tableHTML += '<th style="border: 1px solid #ddd; padding: 8px;">Contributions</th>';
+                tableHTML += '<th style="border: 1px solid #ddd; padding: 8px;">Balance</th>';
+                tableHTML += '<th style="border: 1px solid #ddd; padding: 8px;">Progress</th>';
+                tableHTML += '</tr>';
+                tableHTML += '</thead>';
+                
+                tableHTML += '<tbody>';
+                
+                for (var i = 0; i < Math.min(yearlyData.length, 25); i++) {
+                    var data = yearlyData[i];
+                    var progress = Math.round((data.balance / targetBalance) * 100);
+                    var isRetired = data.age >= retirementAge;
+                    
+                    var rowBg = '';
+                    if (i === 0) rowBg = 'background: #e8f5e8; font-weight: 600;';
+                    else if (data.age === retirementAge) rowBg = 'background: #fff3cd; font-weight: 600;';
+                    else if (isRetired) rowBg = 'background: #f8f9fa;';
+                    
+                    tableHTML += '<tr style="' + rowBg + '">';
+                    
+                    tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">';
+                    tableHTML += data.age;
+                    if (i === 0) tableHTML += '<br><small>(Current)</small>';
+                    if (data.age === retirementAge) tableHTML += '<br><small>(Retire)</small>';
+                    tableHTML += '</td>';
+                    
+                    tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' + data.year + '</td>';
+                    
+                    tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: right;">';
+                    if (data.contributions > 0) {
+                        tableHTML += '$' + Math.round(data.contributions).toLocaleString();
+                    } else {
+                        tableHTML += '—';
+                    }
+                    tableHTML += '</td>';
+                    
+                    tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">$' + Math.round(data.balance).toLocaleString() + '</td>';
+                    
+                    tableHTML += '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">';
+                    if (progress >= 100) {
+                        tableHTML += '<span style="color: #27ae60; font-weight: bold;">✅ ' + progress + '%</span>';
+                    } else if (progress >= 75) {
+                        tableHTML += '<span style="color: #f39c12; font-weight: bold;">' + progress + '%</span>';
+                    } else {
+                        tableHTML += '<span style="color: #e67e22; font-weight: bold;">' + progress + '%</span>';
+                    }
+                    tableHTML += '</td>';
+                    
+                    tableHTML += '</tr>';
+                }
+                
+                tableHTML += '</tbody>';
+                tableHTML += '</table>';
+                tableHTML += '</div>';
+                
+                document.getElementById('yearlyTable').innerHTML = tableHTML;
+                
+            } catch (error) {
+                console.error('Error generating table:', error.message);
+                document.getElementById('yearlyTable').innerHTML = '<p style="color: red;">Table Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function setupAutoCalculation() {
+            var inputs = document.querySelectorAll('input');
+            
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].addEventListener('input', function() {
+                    updateTargetFromIncome();
+                    clearTimeout(window.calcTimeout);
+                    window.calcTimeout = setTimeout(calculateBasic, 300);
+                });
+            }
+        }
+        
+        window.onload = function() {
+            console.log('Page loaded, setting up...');
+            
+            setupAutoCalculation();
+            
+            addWindfall();
+            if (document.getElementById('windfallAmount-1')) {
+                document.getElementById('windfallAmount-1').value = '187500';
+                document.getElementById('windfallYear-1').value = '2026';
+                document.getElementById('windfallAllocation-1').value = '100';
+            }
+            
+            setTimeout(function() {
+                updateTargetFromIncome();
+                calculateBasic();
+            }, 100);
+        };
+        
+        console.log('Script loaded successfully');
+    </script>
+</body>
+</html>
